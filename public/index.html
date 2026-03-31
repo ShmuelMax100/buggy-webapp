@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopFast — Premium Tech Accessories</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">⚡ ShopFast</div>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/cart">Cart <span class="cart-count" id="cart-count">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Premium Tech Accessories</h1>
+      <p>Free shipping on orders over $75</p>
+    </section>
+
+    <section class="products-section">
+      <h2>Featured Products</h2>
+      <div id="error-banner" class="error-banner hidden">
+        <span class="error-icon">⚠️</span>
+        <div>
+          <strong>500 Internal Server Error</strong>
+          <p id="error-detail"></p>
+        </div>
+      </div>
+      <div id="product-grid" class="product-grid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2026 ShopFast Inc. &nbsp;|&nbsp; <a href="/health">System Status</a></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
