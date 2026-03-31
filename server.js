@@ -39,7 +39,7 @@ app.get('/health', (_req, res) => {
 // Accessing db.catalog.items throws TypeError: Cannot read properties of null
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // ← FIXED: Access db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
