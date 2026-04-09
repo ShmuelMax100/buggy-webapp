@@ -15,7 +15,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Simulated in-memory "database" ───────────────────────────────────────────
-// BUG HERE: db.catalog is null — should be `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
@@ -39,7 +38,7 @@ app.get('/health', (_req, res) => {
 // Accessing db.catalog.items throws TypeError: Cannot read properties of null
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // ← FIXED: Changed db.catalog.items to db.products
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
