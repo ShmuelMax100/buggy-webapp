@@ -1,11 +1,9 @@
 /**
- * buggy-webapp — simple e-commerce demo with an intentional production bug.
+ * buggy-webapp — simple e-commerce demo.
  *
- * BUG: GET /api/products reads from `db.catalog.items` but `db.catalog` is
- * null (simulates a failed DB initialisation).  Any request to the products
- * page causes an unhandled TypeError → 500 Internal Server Error.
- *
- * To fix: change `db.catalog` to `db` on line marked "BUG HERE".
+ * FIX APPLIED: GET /api/products previously read from `db.catalog.items` but
+ * `db.catalog` was null, causing an unhandled TypeError → 500 Internal Server
+ * Error.  Reference corrected to `db.products`.
  */
 
 const express = require('express');
@@ -67,7 +65,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page (loads /api/products)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → corrected endpoint');
+  console.log('  GET /api/products → products endpoint (OK)');
 });
