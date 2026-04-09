@@ -15,6 +15,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Simulated in-memory "database" ───────────────────────────────────────────
+// BUG HERE: db.catalog is null — should be `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
@@ -33,10 +34,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── FIXED: /api/products → now works ──────────────────────────────────────────
+// ── BUG FIXED: /api/products → 500 ────────────────────────────────────────────
+// Accessing db.products directly resolves the issue
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // Fixed: accessing db.products directly
+    const items = db.products;   // ← FIXED: Use db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -68,5 +70,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → now fixed');
+  console.log('  GET /api/products → FIXED');
 });
