@@ -23,7 +23,6 @@ const db = {
     { id: 3, name: 'USB-C Hub',           price: 49.99,  stock: 87 },
     { id: 4, name: 'Webcam HD',           price: 89.99,  stock: 0  },
   ],
-  catalog: null,   // ← intentional bug: should reference `db` or be removed
 };
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -35,11 +34,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── BUG: /api/products → 500 ──────────────────────────────────────────────────
-// Accessing db.catalog.items throws TypeError: Cannot read properties of null
+// ── BUG FIXED: /api/products → 500 ────────────────────────────────────────────
+// Accessing db.products directly resolves the issue
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // ← FIXED: Use db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -71,5 +70,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
+  console.log('  GET /api/products → FIXED');
 });
