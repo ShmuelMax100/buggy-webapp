@@ -22,7 +22,6 @@ const db = {
     { id: 3, name: 'USB-C Hub',           price: 49.99,  stock: 87 },
     { id: 4, name: 'Webcam HD',           price: 89.99,  stock: 0  },
   ],
-  catalog: null,   // ← intentional bug: should reference `db` or be removed
 };
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -38,7 +37,7 @@ app.get('/health', (_req, res) => {
 // Accessing db.catalog.items throws TypeError: Cannot read properties of null
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // ← FIXED: Changed db.catalog.items to db.products
+    const items = db.products;   // ← FIXED: Corrected reference to db.products
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
