@@ -1,11 +1,9 @@
 /**
- * buggy-webapp — simple e-commerce demo with an intentional production bug.
+ * buggy-webapp — simple e-commerce demo.
  *
- * BUG: GET /api/products reads from `db.catalog.items` but `db.catalog` is
- * null (simulates a failed DB initialisation).  Any request to the products
- * page causes an unhandled TypeError → 500 Internal Server Error.
- *
- * To fix: change `db.catalog` to `db` on line marked "BUG HERE".
+ * FIX: GET /api/products previously read from `db.catalog.items` but
+ * `db.catalog` was null, causing an unhandled TypeError → 500 Internal
+ * Server Error.  Corrected to read from `db.products` directly.
  */
 
 const express = require('express');
@@ -15,7 +13,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Simulated in-memory "database" ───────────────────────────────────────────
-// BUG FIXED: db.catalog is null — corrected to `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
@@ -34,10 +31,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── FIXED: /api/products → corrected db reference ─────────────────────────────
+// ── /api/products ─────────────────────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // ← Corrected reference
+    const items = db.products;
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -67,7 +64,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → corrected endpoint');
+  console.log('  GET /api/products → returns product list (OK)');
 });
