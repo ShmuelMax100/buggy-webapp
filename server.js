@@ -33,10 +33,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── Fixed: /api/products endpoint ─────────────────────────────────────────────
+// ── FIXED: /api/products → 500 ────────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // Fixed: Accessing db.products directly
+    const items = db.products;   // ← Fixed: Accessing db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -68,5 +68,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → Fixed endpoint');
+  console.log('  GET /api/products → Fixed Internal Server Error');
 });
