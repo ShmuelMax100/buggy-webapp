@@ -1,11 +1,7 @@
 /**
  * buggy-webapp — simple e-commerce demo with an intentional production bug.
  *
- * BUG: GET /api/products reads from `db.catalog.items` but `db.catalog` is
- * null (simulates a failed DB initialisation).  Any request to the products
- * page causes an unhandled TypeError → 500 Internal Server Error.
- *
- * To fix: change `db.catalog` to `db` on line marked "BUG HERE".
+ * FIXED: GET /api/products now reads from `db.products` directly.
  */
 
 const express = require('express');
@@ -22,7 +18,6 @@ const db = {
     { id: 3, name: 'USB-C Hub',           price: 49.99,  stock: 87 },
     { id: 4, name: 'Webcam HD',           price: 89.99,  stock: 0  },
   ],
-  catalog: null,   // ← intentional bug: should reference `db` or be removed
 };
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -34,8 +29,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── FIXED: /api/products → 500 ────────────────────────────────────────────────
-// Accessing db.products directly resolves the issue
+// ── FIXED: /api/products → 200 OK ─────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
     const items = db.products;   // Fixed: Access db.products directly
@@ -68,7 +62,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page (loads /api/products → fixed)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → Fixed Internal Server Error');
+  console.log('  GET /api/products → 200 OK');
 });
