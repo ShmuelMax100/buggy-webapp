@@ -36,7 +36,7 @@ app.get('/health', (_req, res) => {
 // ── FIXED: /api/products → 500 ────────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // ← Fixed: Accessing db.products directly
+    const items = db.products;   // Fixed: Accessing db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
