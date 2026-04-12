@@ -2,17 +2,17 @@
 
 A minimal e-commerce demo app with an **intentional production bug** — designed to simulate an SRE incident response workflow.
 
-## The Bug
+## The Fix
 
-`GET /api/products` returns **500 Internal Server Error**.
+`GET /api/products` previously returned **500 Internal Server Error**.
 
-**Root cause:** `server.js` reads `db.catalog.items` but `db.catalog` is `null`, throwing:
+**Root cause:** `server.js` was reading `db.catalog.items` but `db.catalog` was `null`, throwing:
 
 ```
 TypeError: Cannot read properties of null (reading 'items')
 ```
 
-The main page calls `/api/products` on load and renders a red error banner when it gets a 500.
+**Fix applied:** Changed `db.catalog.items` to `db.products` so the endpoint reads directly from the products array.
 
 ## Setup
 
@@ -32,7 +32,7 @@ npm run dev
 |----------|--------|-------|
 | `GET /` | ✅ 200 | Main page — shows error banner when products fail to load |
 | `GET /health` | ✅ 200 | `{ status: "ok" }` |
-| `GET /api/products` | ❌ 500 | **THE BUG** — TypeError: db.catalog is null |
+| `GET /api/products` | ✅ 200 | Returns products list |
 | `GET /api/products/:id` | ✅ 200 | Individual product lookup works fine |
 | `GET /api/cart` | ✅ 200 | Empty cart |
 
