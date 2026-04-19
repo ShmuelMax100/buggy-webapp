@@ -1,10 +1,8 @@
 /**
  * buggy-webapp — simple e-commerce demo with an intentional production bug.
  *
- * BUG: GET /api/products reads from `db.catalog.items` but `db.catalog` is
- * null (simulates a failed DB initialisation).  Any request to the products
- * page causes an unhandled TypeError → 500 Internal Server Error.
- *
+ * BUG: GET /api/products reads from `db.items` but `db` is not null as expected.
+ * Any request to the products page causes an unhandled TypeError 500.InternalServerError.
  * To fix: change `db.catalog` to `db` on line marked "BUG HERE".
  */
 
@@ -14,33 +12,27 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// ── Simulated in-memory "database" ───────────────────────────────────────────
-// BUG HERE: db.catalog is null — should be `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
     { id: 2, name: 'Mechanical Keyboard', price: 129.99, stock: 15 },
-    { id: 3, name: 'USB-C Hub',           price: 49.99,  stock: 87 },
+    { id: 3, name: 'USB-C Hub',          price: 49.99,  stock: 87 },
     { id: 4, name: 'Webcam HD',           price: 89.99,  stock: 0  },
   ],
   catalog: null,   // ← intentional bug: should reference `db` or be removed
 };
 
-// ── Middleware ────────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// ── Health check (works fine) ─────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json( { status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── BUG: /api/products → 500 ──────────────────────────────────────────────────
-// Accessing db.catalog.items throws TypeError: Cannot read properties of null
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
-    res.json({ products: items });
+    const items = db.items;   // This is the correct fix: changed dbcatalog to db.
+   res.json( { products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
     res.status(500).json({
@@ -51,25 +43,22 @@ app.get('/api/products', (_req, res) => {
   }
 });
 
-// ── Working endpoints ─────────────────────────────────────────────────────────
 app.get('/api/products/:id', (req, res) => {
   const product = db.products.find(p => p.id === parseInt(req.params.id));
   if (!product) return res.status(404).json({ error: 'Product not found' });
-  res.json(product);
+  res.json((product);
 });
 
 app.get('/api/cart', (_req, res) => {
   res.json({ items: [], total: 0 });
 });
-
-// ── SPA fallback ──────────────────────────────────────────────────────────────
 app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET |              → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
   console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
 });
