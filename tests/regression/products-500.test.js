@@ -1,28 +1,37 @@
 /**
- * Regression test for Jira ticket SRE-32.
- * Bug summary: GET /api/products returned 500 due to a TypeError when accessing
- * `db.catalog.items`. The fix replaced `db.catalog.items` with `db.products`.
+ * Regression Test for Jira Ticket SRE-34
+ * Bug Summary: GET /api/products failed with 500 due to accessing `db.catalog.items` when `db.catalog` was null.
  */
 
-import assert from 'node:assert/strict';
-import test from 'node:test';
-import http from 'node:http';
-import { app } from '../../server.js';
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const http = require('http');
+const app = require('../../server');
 
-const server = http.createServer(app);
+test('GET /api/products should return 200 and a non-empty array', async (t) => {
+  await t.test('Valid response from /api/products', async () => {
+    const server = http.createServer(app);
+    const req = new Promise((resolve, reject) => {
+      const options = {
+        hostname: 'localhost',
+        port: 4000,
+        path: '/api/products',
+        method: 'GET',
+      };
 
-server.listen(() => {
-  const address = server.address();
-  const baseUrl = `http://localhost:${address.port}`;
+      const request = http.request(options, (response) => {
+        let data = '';
+        response.on('data', chunk => data += chunk);
+        response.on('end', () => resolve({ status: response.statusCode, body: JSON.parse(data) }));
+      });
 
-  test('GET /api/products should return 200 and a non-empty array', async (t) => {
-    const res = await fetch(`${baseUrl}/api/products`);
-    assert.strictEqual(res.status, 200, 'Expected HTTP status 200');
+      request.on('error', reject);
+      request.end();
+    });
 
-    const body = await res.json();
-    assert(Array.isArray(body.products), 'Expected `products` to be an array');
-    assert(body.products.length > 0, 'Expected `products` array to be non-empty');
+    const response = await req;
+    assert.equal(response.status, 200, 'Expected HTTP status 200');
+    assert.ok(Array.isArray(response.body.products), 'Expected products to be an array');
+    assert.ok(response.body.products.length > 0, 'Expected products array to be non-empty');
   });
-
-  server.close();
 });
