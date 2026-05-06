@@ -35,8 +35,8 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── BUG: /api/products → 500 ──────────────────────────────────────────────────
-// Accessing db.catalog.items throws TypeError: Cannot read properties of null
+// ── BUG FIXED: /api/products → 500 ────────────────────────────────────────────
+// Accessing db.products instead of db.catalog.items
 app.get('/api/products', (_req, res) => {
   try {
     const items = db.products;   // ← FIXED: Access db.products directly
@@ -71,5 +71,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
+  console.log('  GET /api/products → FIXED');
 });
