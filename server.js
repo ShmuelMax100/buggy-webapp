@@ -33,10 +33,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── FIXED: /api/products → corrected reference ────────────────────────────────
+// ── Fixed: /api/products ──────────────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // Corrected reference
+    const items = db.products;   // Fixed: directly access db.products
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -66,7 +66,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page (loads /api/products → fixed)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → fixed endpoint');
+  console.log('  GET /api/products → fixed');
 });
