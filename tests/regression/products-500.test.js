@@ -1,6 +1,6 @@
 /**
- * Regression Test for Jira Ticket SRE-34
- * Bug Summary: GET /api/products failed with 500 due to accessing `db.catalog.items` when `db.catalog` was null.
+ * Regression test for Jira ticket SRE-36
+ * Verifies that GET /api/products no longer fails with 500 Internal Server Error.
  */
 
 const assert = require('node:assert/strict');
@@ -9,29 +9,27 @@ const http = require('http');
 const app = require('../../server');
 
 test('GET /api/products should return 200 and a non-empty array', async (t) => {
-  await t.test('Valid response from /api/products', async () => {
+  await t.test('API response validation', async () => {
     const server = http.createServer(app);
-    const req = new Promise((resolve, reject) => {
-      const options = {
+
+    const response = await new Promise((resolve) => {
+      const req = http.request({
         hostname: 'localhost',
         port: 4000,
         path: '/api/products',
         method: 'GET',
-      };
-
-      const request = http.request(options, (response) => {
+      }, (res) => {
         let data = '';
-        response.on('data', chunk => data += chunk);
-        response.on('end', () => resolve({ status: response.statusCode, body: JSON.parse(data) }));
+        res.on('data', chunk => data += chunk);
+        res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
       });
-
-      request.on('error', reject);
-      request.end();
+      req.end();
     });
 
-    const response = await req;
-    assert.equal(response.status, 200, 'Expected HTTP status 200');
+    assert.equal(response.status, 200, 'Expected status 200');
     assert.ok(Array.isArray(response.body.products), 'Expected products to be an array');
     assert.ok(response.body.products.length > 0, 'Expected products array to be non-empty');
+
+    server.close();
   });
 });
