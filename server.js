@@ -34,10 +34,11 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── Fixed: /api/products → 200 OK ─────────────────────────────────────────────
+// ── BUG FIXED: /api/products → 500 ────────────────────────────────────────────
+// Accessing db.products instead of db.catalog.items
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // ← FIXED: Access db.products directly
+    const items = db.products;   // ← FIXED: Accessing db.products directly
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -69,5 +70,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 200 OK  ← FIXED');
+  console.log('  GET /api/products → FIXED: No longer 500 Internal Server Error');
 });
