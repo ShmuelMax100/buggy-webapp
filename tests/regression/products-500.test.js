@@ -1,35 +1,32 @@
 /**
- * Regression test for Jira ticket SRE-36
- * Verifies that GET /api/products no longer fails with 500 Internal Server Error.
+ * Regression test for SRE-46: Fixed bug in GET /api/products.
+ * Ensures route returns 200 OK with non-empty product list.
  */
 
+const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const test = require('node:test');
 const http = require('http');
-const app = require('../../server');
+const app = require('../server');
 
-test('GET /api/products should return 200 and a non-empty array', async (t) => {
-  await t.test('API response validation', async () => {
-    const server = http.createServer(app);
+test('GET /api/products should return 200 and non-empty array', async (t) => {
+  const server = http.createServer(app);
 
-    const response = await new Promise((resolve) => {
-      const req = http.request({
-        hostname: 'localhost',
-        port: 4000,
-        path: '/api/products',
-        method: 'GET',
-      }, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
-      });
-      req.end();
+  await new Promise((resolve) => server.listen(resolve));
+  const address = server.address();
+  const url = `http://localhost:${address.port}/api/products`;
+
+  const req = http.request(url, (res) => {
+    assert.strictEqual(res.statusCode, 200);
+
+    let data = '';
+    res.on('data', (chunk) => data += chunk);
+    res.on('end', () => {
+      const body = JSON.parse(data);
+      assert(Array.isArray(body.products), 'Response should contain products array');
+      assert(body.products.length > 0, 'Products array should not be empty');
+      server.close();
     });
-
-    assert.equal(response.status, 200, 'Expected status 200');
-    assert.ok(Array.isArray(response.body.products), 'Expected products to be an array');
-    assert.ok(response.body.products.length > 0, 'Expected products array to be non-empty');
-
-    server.close();
   });
+
+  req.end();
 });
