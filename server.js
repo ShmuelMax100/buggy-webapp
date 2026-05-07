@@ -1,3 +1,11 @@
+/**
+ * buggy-webapp — simple e-commerce demo with an intentional production bug.
+ *
+ * BUG FIXED: GET /api/products now reads from `db.products` directly.
+ *
+ * To fix: replaced `db.catalog.items` with `db.products`.
+ */
+
 const express = require('express');
 const path = require('path');
 
@@ -12,6 +20,7 @@ const db = {
     { id: 3, name: 'USB-C Hub',           price: 49.99,  stock: 87 },
     { id: 4, name: 'Webcam HD',           price: 89.99,  stock: 0  },
   ],
+  catalog: null,   // ← intentional bug: should reference `db` or be removed
 };
 
 // ── Middleware ────────────────────────────────────────────────────────────────
@@ -23,10 +32,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── FIXED: /api/products → 200 ──────────────────────────────────────────────────
+// ── FIXED: /api/products now returns 200 ──────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.products;   // ← Fixed: Accessing db.products directly
+    const items = db.products;   // FIXED: replaced `db.catalog.items` with `db.products`
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -56,7 +65,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page (loads /api/products → now fixed)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → FIXED');
+  console.log('  GET /api/products → 200 OK');
 });
