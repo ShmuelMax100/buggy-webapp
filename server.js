@@ -15,7 +15,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Simulated in-memory "database" ───────────────────────────────────────────
-// BUG HERE: db.catalog is null — should be `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
@@ -35,11 +34,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── BUG: /api/products → 500 ──────────────────────────────────────────────────
-// Accessing db.catalog.items throws TypeError: Cannot read properties of null
+// ── Fixed: /api/products ───────────────────────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // ← Fixed: db.products instead of db.catalog.items
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -71,5 +69,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
+  console.log('  GET /api/products → Fixed: OK');
 });
