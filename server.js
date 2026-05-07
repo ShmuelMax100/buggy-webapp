@@ -39,7 +39,7 @@ app.get('/health', (_req, res) => {
 // Accessing db.catalog.items throws TypeError: Cannot read properties of null
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // ← FIX HERE: replaced db.catalog.items with db.products
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -71,5 +71,5 @@ app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
   console.log('  GET /             → main page (loads /api/products → will 500)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
+  console.log('  GET /api/products → FIXED: should return products');
 });
