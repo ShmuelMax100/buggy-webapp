@@ -1,10 +1,21 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
+const net = require('node:net');
 
-const PORT = 4100;
-const BASE_URL = `http://127.0.0.1:${PORT}`;
 let serverProcess;
+let baseUrl;
+
+function getAvailablePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address();
+      server.close(() => resolve(port));
+    });
+    server.on('error', reject);
+  });
+}
 
 async function waitForServer(url, timeoutMs = 8000) {
   const start = Date.now();
@@ -24,23 +35,27 @@ async function waitForServer(url, timeoutMs = 8000) {
 }
 
 test.before(async () => {
+  const port = await getAvailablePort();
+  baseUrl = `http://127.0.0.1:${port}`;
+
   serverProcess = spawn('node', ['server.js'], {
     cwd: process.cwd(),
-    env: { ...process.env, PORT: String(PORT) },
+    env: { ...process.env, PORT: String(port) },
     stdio: 'ignore',
   });
 
-  await waitForServer(`${BASE_URL}/health`);
+  await waitForServer(`${baseUrl}/health`);
 });
 
-test.after(() => {
+test.after(async () => {
   if (serverProcess && !serverProcess.killed) {
     serverProcess.kill('SIGTERM');
+    await new Promise(resolve => serverProcess.once('exit', resolve));
   }
 });
 
 test('GET /api/products returns 200 and a non-empty products array', async () => {
-  const response = await fetch(`${BASE_URL}/api/products`);
+  const response = await fetch(`${baseUrl}/api/products`);
   const body = await response.json();
 
   assert.equal(response.status, 200);
