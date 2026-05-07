@@ -1,11 +1,9 @@
 /**
  * buggy-webapp — simple e-commerce demo with an intentional production bug.
  *
- * BUG: GET /api/products reads from `db.catalog.items` but `db.catalog` is
- * null (simulates a failed DB initialisation).  Any request to the products
- * page causes an unhandled TypeError → 500 Internal Server Error.
+ * BUG FIXED: GET /api/products now reads from `db.products` directly.
  *
- * To fix: change `db.catalog` to `db` on line marked "BUG HERE".
+ * To fix: replaced `db.catalog.items` with `db.products`.
  */
 
 const express = require('express');
@@ -15,7 +13,6 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ── Simulated in-memory "database" ───────────────────────────────────────────
-// BUG HERE: db.catalog is null — should be `db` directly.
 const db = {
   products: [
     { id: 1, name: 'Wireless Headphones', price: 79.99, stock: 42 },
@@ -35,11 +32,10 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── BUG: /api/products → 500 ──────────────────────────────────────────────────
-// Accessing db.catalog.items throws TypeError: Cannot read properties of null
+// ── FIXED: /api/products now returns 200 ──────────────────────────────────────
 app.get('/api/products', (_req, res) => {
   try {
-    const items = db.catalog.items;   // ← TypeError: db.catalog is null
+    const items = db.products;   // FIXED: replaced `db.catalog.items` with `db.products`
     res.json({ products: items });
   } catch (err) {
     console.error('[ERROR] /api/products failed:', err.message);
@@ -69,7 +65,7 @@ app.get('*', (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`buggy-webapp running at http://localhost:${PORT}`);
-  console.log('  GET /             → main page (loads /api/products → will 500)');
+  console.log('  GET /             → main page (loads /api/products → now fixed)');
   console.log('  GET /health       → health check (OK)');
-  console.log('  GET /api/products → 500 Internal Server Error  ← THE BUG');
+  console.log('  GET /api/products → 200 OK');
 });
