@@ -1,6 +1,8 @@
 /**
- * Regression test for SRE-39
- * Bug summary: GET /api/products returned 500 due to a null db.catalog.
+ * Regression test for SRE-41: Fix 500 error on GET /api/products.
+ *
+ * Summary: This test verifies that the /api/products endpoint returns
+ * a 200 status code and a non-empty array of products.
  */
 
 const assert = require('node:assert/strict');
@@ -9,17 +11,22 @@ const http = require('http');
 const app = require('../../server');
 
 test('GET /api/products should return 200 and a non-empty array', async (t) => {
-  await t.test('Response validation', (done) => {
+  const server = http.createServer(app);
+
+  await t.test('Request /api/products', (done) => {
     const req = http.request({
       hostname: 'localhost',
       port: 4000,
       path: '/api/products',
       method: 'GET',
     }, (res) => {
-      assert.strictEqual(res.statusCode, 200, 'Expected status code 200');
+      assert.equal(res.statusCode, 200, 'Expected status code 200');
 
       let data = '';
-      res.on('data', chunk => data += chunk);
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
       res.on('end', () => {
         const body = JSON.parse(data);
         assert(Array.isArray(body.products), 'Expected products to be an array');
@@ -34,4 +41,6 @@ test('GET /api/products should return 200 and a non-empty array', async (t) => {
 
     req.end();
   });
+
+  server.close();
 });
